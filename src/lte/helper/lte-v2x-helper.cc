@@ -8,6 +8,7 @@
 #include <ns3/random-variable-stream.h>
 #include <iostream>
 
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("LteV2xHelper"); 
@@ -203,6 +204,306 @@ LteV2xHelper::DoActivateSidelinkBearer (NetDeviceContainer ues, Ptr<LteSlTft> tf
   NS_LOG_FUNCTION (this);
   m_lteHelper->ActivateSidelinkBearer (ues, tft);
 }
+
+void
+LteV2xHelper::EnableTraces (void)
+{
+  EnablePhyTraces ();
+  EnableMacTraces ();
+  EnableRlcTraces ();
+  EnablePdcpTraces ();
+}
+
+void
+LteV2xHelper::EnableRlcTraces (void)
+{
+  NS_ASSERT_MSG (m_rlcStats == 0, "please make sure that LteHelper::EnableRlcTraces is called at most once");
+  m_rlcStats = CreateObject<RadioBearerStatsCalculator> ("RLC");
+  m_radioBearerStatsConnector.EnableRlcStats (m_rlcStats);
+}
+
+
+void
+LteV2xHelper::EnablePhyTraces (void)
+{
+  EnableDlPhyTraces ();
+  EnableUlPhyTraces ();
+  EnableSlPhyTraces ();
+  EnableDlTxPhyTraces ();
+  EnableUlTxPhyTraces ();
+  EnableSlTxPhyTraces ();
+  EnableDlRxPhyTraces ();
+  EnableUlRxPhyTraces ();
+  EnableSlRxPhyTraces ();
+  EnableSlPscchRxPhyTraces ();
+}
+
+void
+LteV2xHelper::EnableDlTxPhyTraces (void)
+{
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMap/*/LteEnbPhy/DlPhyTransmission",
+                   MakeBoundCallback (&PhyTxStatsCalculator::DlPhyTransmissionCallback, m_phyTxStats));
+}
+
+void
+LteV2xHelper::EnableUlTxPhyTraces (void)
+{
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMapUe/*/LteUePhy/UlPhyTransmission",
+                   MakeBoundCallback (&PhyTxStatsCalculator::UlPhyTransmissionCallback, m_phyTxStats));
+}
+
+void
+LteV2xHelper::EnableSlTxPhyTraces (void)
+{
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUePhy/SlPhyTransmission",
+                   MakeBoundCallback (&PhyTxStatsCalculator::SlPhyTransmissionCallback, m_phyTxStats));
+}
+
+void
+LteV2xHelper::EnableDlRxPhyTraces (void)
+{
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMapUe/*/LteUePhy/DlSpectrumPhy/DlPhyReception",
+                   MakeBoundCallback (&PhyRxStatsCalculator::DlPhyReceptionCallback, m_phyRxStats));
+}
+
+void
+LteV2xHelper::EnableUlRxPhyTraces (void)
+{
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMap/*/LteEnbPhy/UlSpectrumPhy/UlPhyReception",
+                   MakeBoundCallback (&PhyRxStatsCalculator::UlPhyReceptionCallback, m_phyRxStats));
+}
+
+void
+LteV2xHelper::EnableSlRxPhyTraces (void)
+{
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUePhy/SlSpectrumPhy/SlPhyReception",
+                   MakeBoundCallback (&PhyRxStatsCalculator::SlPhyReceptionCallback, m_phyRxStats));
+}
+
+void
+LteV2xHelper::EnableSlPscchRxPhyTraces (void)
+{
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUePhy/SlSpectrumPhy/SlPscchReception",
+                   MakeBoundCallback (&PhyRxStatsCalculator::SlPscchReceptionCallback, m_phyRxStats));
+}
+
+void
+LteV2xHelper::EnableMacTraces (void)
+{
+  EnableDlMacTraces ();
+  EnableUlMacTraces ();
+  EnableSlUeMacTraces ();
+  EnableSlSchUeMacTraces ();
+}
+
+void
+LteV2xHelper::EnableSlUeMacTraces (void)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUeMac/SlUeScheduling",
+                   MakeBoundCallback (&MacStatsCalculator::SlUeSchedulingCallback, m_macStats));
+}
+
+void
+LteV2xHelper::EnableSlSchUeMacTraces (void)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  Config::Connect ("/NodeList/*/DeviceList/*/LteUeMac/SlSharedChUeScheduling",
+                   MakeBoundCallback (&MacStatsCalculator::SlSharedChUeSchedulingCallback, m_macStats));
+}
+
+void
+LteV2xHelper::EnableDlMacTraces (void)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMap/*/LteEnbMac/DlScheduling",
+                   MakeBoundCallback (&MacStatsCalculator::DlSchedulingCallback, m_macStats));
+}
+
+void
+LteV2xHelper::EnableUlMacTraces (void)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMap/*/LteEnbMac/UlScheduling",
+                   MakeBoundCallback (&MacStatsCalculator::UlSchedulingCallback, m_macStats));
+}
+
+void
+LteV2xHelper::EnableDlPhyTraces (void)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMapUe/*/LteUePhy/ReportCurrentCellRsrpSinr",
+                   MakeBoundCallback (&PhyStatsCalculator::ReportCurrentCellRsrpSinrCallback, m_phyStats));
+}
+
+void
+LteV2xHelper::EnableUlPhyTraces (void)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMap/*/LteEnbPhy/ReportUeSinr",
+                   MakeBoundCallback (&PhyStatsCalculator::ReportUeSinr, m_phyStats));
+  Config::Connect ("/NodeList/*/DeviceList/*/ComponentCarrierMap/*/LteEnbPhy/ReportInterference",
+                   MakeBoundCallback (&PhyStatsCalculator::ReportInterference, m_phyStats));
+}
+
+void
+LteV2xHelper::EnableSlPhyTraces (void)
+{
+  //TBD
+}
+
+void
+LteV2xHelper::EnablePdcpTraces (void)
+{
+  NS_ASSERT_MSG (m_pdcpStats == 0, "please make sure that LteHelper::EnablePdcpTraces is called at most once");
+  m_pdcpStats = CreateObject<RadioBearerStatsCalculator> ("PDCP");
+  m_radioBearerStatsConnector.EnablePdcpStats (m_pdcpStats);
+}
+
+void
+LteV2xHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename)
+{
+  //
+  // All of the Pcap enable functions vector through here including the ones
+  // that are wandering through all of devices on perhaps all of the nodes in
+  // the system.  We can only deal with devices of type PointToPointNetDevice.
+  //
+  Ptr<NetDevice> device = nd->GetObject<NetDevice> ();
+  if (device == 0)
+    {
+      NS_LOG_INFO ("NetDevice::EnablePcapInternal(): Device " << device << " not of type ns3::PointToPointNetDevice");
+      return;
+    }
+
+  PcapHelper pcapHelper;
+
+  std::string filename;
+  if (explicitFilename)
+    {
+      filename = prefix;
+    }
+  else
+    {
+      filename = pcapHelper.GetFilenameFromDevice (prefix, device);
+    }
+
+  Ptr<PcapFileWrapper> file = pcapHelper.CreateFile (filename, std::ios::out,
+                                                     PcapHelper::DLT_PPP);
+  pcapHelper.HookDefaultSink<NetDevice> (device, "PromiscSniffer", file);
+}
+
+void
+LteV2xHelper::EnableAsciiInternal (
+  Ptr<OutputStreamWrapper> stream,
+  std::string prefix,
+  Ptr<NetDevice> nd,
+  bool explicitFilename)
+{
+  //
+  // All of the ascii enable functions vector through here including the ones
+  // that are wandering through all of devices on perhaps all of the nodes in
+  // the system.  We can only deal with devices of type PointToPointNetDevice.
+  //
+  Ptr<NetDeviceQueue> device = nd->GetObject<NetDevice> ();
+  if (device == 0)
+    {
+      NS_LOG_INFO ("PointToPointHelper::EnableAsciiInternal(): Device " << device <<
+                   " not of type ns3::PointToPointNetDevice");
+      return;
+    }
+
+  //
+  // Our default trace sinks are going to use packet printing, so we have to
+  // make sure that is turned on.
+  //
+  Packet::EnablePrinting ();
+
+  //
+  // If we are not provided an OutputStreamWrapper, we are expected to create
+  // one using the usual trace filename conventions and do a Hook*WithoutContext
+  // since there will be one file per context and therefore the context would
+  // be redundant.
+  //
+  if (stream == 0)
+    {
+      //
+      // Set up an output stream object to deal with private ofstream copy
+      // constructor and lifetime issues.  Let the helper decide the actual
+      // name of the file given the prefix.
+      //
+      AsciiTraceHelper asciiTraceHelper;
+
+      std::string filename;
+      if (explicitFilename)
+        {
+          filename = prefix;
+        }
+      else
+        {
+          filename = asciiTraceHelper.GetFilenameFromDevice (prefix, device);
+        }
+
+      Ptr<OutputStreamWrapper> theStream = asciiTraceHelper.CreateFileStream (filename);
+
+      //
+      // The MacRx trace source provides our "r" event.
+      //
+      asciiTraceHelper.HookDefaultReceiveSinkWithoutContext<NetDevice> (device, "MacRx", theStream);
+
+      //
+      // The "+", '-', and 'd' events are driven by trace sources actually in the
+      // transmit queue.
+      //
+      Ptr<Queue<Packet> > queue = device->GetQueueLimits ();
+      asciiTraceHelper.HookDefaultEnqueueSinkWithoutContext<Queue<Packet> > (queue, "Enqueue", theStream);
+      asciiTraceHelper.HookDefaultDropSinkWithoutContext<Queue<Packet> > (queue, "Drop", theStream);
+      asciiTraceHelper.HookDefaultDequeueSinkWithoutContext<Queue<Packet> > (queue, "Dequeue", theStream);
+
+      // PhyRxDrop trace source for "d" event
+      asciiTraceHelper.HookDefaultDropSinkWithoutContext<NetDevice> (device, "PhyRxDrop", theStream);
+
+      return;
+    }
+
+  //
+  // If we are provided an OutputStreamWrapper, we are expected to use it, and
+  // to providd a context.  We are free to come up with our own context if we
+  // want, and use the AsciiTraceHelper Hook*WithContext functions, but for
+  // compatibility and simplicity, we just use Config::Connect and let it deal
+  // with the context.
+  //
+  // Note that we are going to use the default trace sinks provided by the
+  // ascii trace helper.  There is actually no AsciiTraceHelper in sight here,
+  // but the default trace sinks are actually publicly available static
+  // functions that are always there waiting for just such a case.
+  //
+  uint32_t nodeid = nd->GetNode ()->GetId ();
+  uint32_t deviceid = nd->GetIfIndex ();
+  std::ostringstream oss;
+
+  oss << "/NodeList/" << nd->GetNode ()->GetId () << "/DeviceList/" << deviceid << "/$ns3::PointToPointNetDevice/MacRx";
+  Config::Connect (oss.str (), MakeBoundCallback (&AsciiTraceHelper::DefaultReceiveSinkWithContext, stream));
+
+  oss.str ("");
+  oss << "/NodeList/" << nodeid << "/DeviceList/" << deviceid << "/$ns3::PointToPointNetDevice/TxQueue/Enqueue";
+  Config::Connect (oss.str (), MakeBoundCallback (&AsciiTraceHelper::DefaultEnqueueSinkWithContext, stream));
+
+  oss.str ("");
+  oss << "/NodeList/" << nodeid << "/DeviceList/" << deviceid << "/$ns3::PointToPointNetDevice/TxQueue/Dequeue";
+  Config::Connect (oss.str (), MakeBoundCallback (&AsciiTraceHelper::DefaultDequeueSinkWithContext, stream));
+
+  oss.str ("");
+  oss << "/NodeList/" << nodeid << "/DeviceList/" << deviceid << "/$ns3::PointToPointNetDevice/TxQueue/Drop";
+  Config::Connect (oss.str (), MakeBoundCallback (&AsciiTraceHelper::DefaultDropSinkWithContext, stream));
+
+  oss.str ("");
+  oss << "/NodeList/" << nodeid << "/DeviceList/" << deviceid << "/$ns3::PointToPointNetDevice/PhyRxDrop";
+  Config::Connect (oss.str (), MakeBoundCallback (&AsciiTraceHelper::DefaultDropSinkWithContext, stream));
+}
+
+
+
+
 
 
 }

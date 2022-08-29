@@ -39,10 +39,12 @@
 #include "ns3/ns2-mobility-helper.h"
 #include <cfloat>
 #include <sstream>
+#include <ns3/log.h>
+
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("v2x_communication_mode_4");
+//NS_LOG_COMPONENT_DEFINE ("v2x_communication_mode_4");
 
 // Output 
 std::string simtime = "log_simtime_v2x.csv"; 
@@ -56,6 +58,7 @@ Ptr<OutputStreamWrapper> log_simtime;
 Ptr<OutputStreamWrapper> log_positions;
 Ptr<OutputStreamWrapper> log_rx_data;
 Ptr<OutputStreamWrapper> log_tx_data;
+
 
 // Global variables
 uint32_t ctr_totRx = 0; 	// Counter for total received packets
@@ -115,10 +118,12 @@ SidelinkV2xAnnouncementMacTrace(Ptr<Socket> socket)
         }
     }
     // Generate CAM 
+
     std::ostringstream msgCam;
-    msgCam << id-1 << ";" << simTime << ";" << (int) posTx.x << ";" << (int) posTx.y << '\0'; 
+    msgCam << "cam data : " << id-1 << ";" << simTime << ";" << (int) posTx.x << ";" << (int) posTx.y << '\0'; 
     Ptr<Packet> packet = Create<Packet>((uint8_t*)msgCam.str().c_str(),lenCam);
     socket->Send(packet);
+    //std::cout << msgCam.str().data() << std::endl;
     *log_tx_data->GetStream() << ctr_totTx << ";" << simTime << ";"  << id-1 << ";" << (int) posTx.x << ";" << (int) posTx.y << std::endl;
 }
 
@@ -172,7 +177,7 @@ main (int argc, char *argv[])
     // NOTE: commandline parser is currently (05.04.2019) not working for uint8_t (Bug 2916)
 
     uint16_t simTime = 100;                 // Simulation time in seconds
-    uint32_t numVeh = 100;                  // Number of vehicles
+    uint32_t numVeh = 10;                  // Number of vehicles
     lenCam = 190;                           // Length of CAM message in bytes [50-300 Bytes]
     double ueTxPower = 23.0;                // Transmission power in dBm
     double probResourceKeep = 0.0;          // Probability to select the previous resource again [0.0-0.8]
@@ -363,6 +368,12 @@ main (int argc, char *argv[])
     ueIpIface = epcHelper->AssignUeIpv4Address (ueDevs);
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
 
+    NS_LOG_INFO ("ASSIGNED IP ADDRESS of v1:" );
+    NS_LOG_INFO (ueIpIface.GetAddress(0));
+
+    NS_LOG_INFO ("ASSIGNED IP ADDRESS of v2:" );
+    NS_LOG_INFO (ueIpIface.GetAddress(1));
+
     for(uint32_t u = 0; u < ueAllNodes.GetN(); ++u)
         {
             Ptr<Node> ueNode = ueAllNodes.Get(u);
@@ -408,7 +419,7 @@ main (int argc, char *argv[])
             groupsPerUe [mIt->second]++;
         }
 
-    // lteV2xHelper->PrintGroups (txGroups, log_connections);
+    lteV2xHelper->PrintGroups (txGroups, log_connections);
 
     NS_LOG_INFO ("Installing applications...");
     
@@ -480,6 +491,7 @@ main (int argc, char *argv[])
             groupL2Addresses.push_back (groupL2Address);
             groupL2Address++;
             clientRespondersAddress = Ipv4AddressGenerator::NextAddress (Ipv4Mask ("255.0.0.0"));
+            std::cout << clientRespondersAddress << std::endl;
         }
 
         NS_LOG_INFO ("Creating Sidelink Configuration...");
@@ -523,6 +535,8 @@ main (int argc, char *argv[])
         Simulator::Schedule(Seconds(1), &PrintStatus, 1, log_simtime);
 
         NS_LOG_INFO ("Starting Simulation...");
+        lteV2xHelper->EnablePcapAll("lte-v2x");
+        
         Simulator::Stop(MilliSeconds(simTime*1000+40));
         Simulator::Run();
         Simulator::Destroy();

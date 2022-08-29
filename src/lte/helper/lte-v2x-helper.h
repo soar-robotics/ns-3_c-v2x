@@ -27,6 +27,7 @@
 #include <ns3/lte-ue-net-device.h>
 #include <ns3/lte-hex-grid-enb-topology-helper.h>
 #include <ns3/output-stream-wrapper.h>
+#include "ns3/trace-helper.h"
 
 namespace ns3 {
 
@@ -36,7 +37,7 @@ namespace ns3 {
  * layout is done row-wise. 
  *
  */
-class LteV2xHelper : public Object
+class LteV2xHelper : public Object, public PcapHelperForDevice, public AsciiTraceHelperForDevice
 {
 public:
   /**
@@ -45,6 +46,23 @@ public:
   enum SrsrpMethod_t { SRSRP_EVAL, ///< Defined in TR 36.843
                        SRSRP_STD ///<standard function of S-RSRP defined in TS 136.214
   };
+
+  
+
+   /// Container of PHY layer statistics.
+  Ptr<PhyStatsCalculator> m_phyStats;
+  /// Container of PHY layer statistics related to transmission.
+  Ptr<PhyTxStatsCalculator> m_phyTxStats;
+  /// Container of PHY layer statistics related to reception.
+  Ptr<PhyRxStatsCalculator> m_phyRxStats;
+  /// Container of MAC layer statistics.
+  Ptr<MacStatsCalculator> m_macStats;
+  /// Container of RLC layer statistics.
+  Ptr<RadioBearerStatsCalculator> m_rlcStats;
+  /// Container of PDCP layer statistics.
+  Ptr<RadioBearerStatsCalculator> m_pdcpStats;
+  /// Connects RLC and PDCP statistics containers to appropriate trace sources
+  RadioBearerStatsConnector m_radioBearerStatsConnector;
 
 
   LteV2xHelper (void);
@@ -131,12 +149,133 @@ public:
    */
   void DoActivateSidelinkBearer (NetDeviceContainer ues, Ptr<LteSlTft> tft);
 
+
+  /**
+   * Enables trace sinks for PHY, MAC, RLC and PDCP. To make sure all nodes are
+   * traced, traces should be enabled once all UEs and eNodeBs are in place and
+   * connected, just before starting the simulation.
+   */
+  void EnableTraces (void);
+
+  /**
+   * Enable trace sinks for PHY layer.
+   */
+  void EnablePhyTraces (void);
+
+  /**
+   * Enable trace sinks for DL PHY layer.
+   */
+  void EnableDlPhyTraces (void);
+
+  /**
+   * Enable trace sinks for UL PHY layer.
+   */
+  void EnableUlPhyTraces (void);
+
+  /**
+   * Enable trace sinks for SL PHY layer.
+   */
+  void EnableSlPhyTraces (void);
+
+  /**
+   * Enable trace sinks for DL transmission PHY layer.
+   */
+  void EnableDlTxPhyTraces (void);
+
+  /**
+   * Enable trace sinks for UL transmission PHY layer.
+   */
+  void EnableUlTxPhyTraces (void);
+
+  /**
+   * Enable trace sinks for SL transmission PHY layer.
+   */
+  void EnableSlTxPhyTraces (void);
+
+  /**
+   * Enable trace sinks for DL reception PHY layer.
+   */
+  void EnableDlRxPhyTraces (void);
+
+  /**
+   * Enable trace sinks for UL reception PHY layer.
+   */
+  void EnableUlRxPhyTraces (void);
+
+  /**
+   * Enable trace sinks for SL reception PHY layer.
+   */
+  void EnableSlRxPhyTraces (void);
+
+  /**
+   * Enable trace sinks for SL reception PHY layer.
+   */
+  void EnableSlPscchRxPhyTraces (void);
+
+  /**
+   * Enable trace sinks for MAC layer.
+   */
+  void EnableMacTraces (void);
+
+  /**
+   * Enable trace sinks for DL MAC layer.
+   */
+  void EnableDlMacTraces (void);
+
+  /**
+   * Enable trace sinks for UL MAC layer.
+   */
+  void EnableUlMacTraces (void);
+
+  /**
+   * Enable trace sinks for SL UE MAC layer.
+   */
+  void EnableSlUeMacTraces (void);
+
+  /**
+   * Enable trace sinks for SL UE MAC layer.
+   */
+  void EnableSlSchUeMacTraces (void);
+
+  /**
+   * Enable trace sinks for RLC layer.
+   */
+  void EnableRlcTraces (void);
+
+  /**
+   * Enable trace sinks for PDCP layer
+   */
+  void EnablePdcpTraces (void);
+
+
+
 private:
 
   Ptr<LteHelper> m_lteHelper;
 
+  virtual void EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename);
 
+  /**
+   * \brief Enable ascii trace output on the indicated net device.
+   *
+   * NetDevice-specific implementation mechanism for hooking the trace and
+   * writing to the trace file.
+   *
+   * \param stream The output stream object to use when logging ascii traces.
+   * \param prefix Filename prefix to use for ascii trace files.
+   * \param nd Net device for which you want to enable tracing.
+   * \param explicitFilename Treat the prefix as an explicit filename if true
+   */
+  virtual void EnableAsciiInternal (
+    Ptr<OutputStreamWrapper> stream,
+    std::string prefix,
+    Ptr<NetDevice> nd,
+    bool explicitFilename);
 
+  ObjectFactory m_queueFactory;         //!< Queue Factory
+  ObjectFactory m_channelFactory;       //!< Channel Factory
+  ObjectFactory m_deviceFactory;        //!< Device Factory
+  bool m_enableFlowControl;             //!< whether to enable flow control
 };  // end of 'class LteV2xHelper'
 
 
