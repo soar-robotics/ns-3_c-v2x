@@ -44,7 +44,7 @@
 
 using namespace ns3;
 
-//NS_LOG_COMPONENT_DEFINE ("v2x_communication_mode_4");
+NS_LOG_COMPONENT_DEFINE ("v2x_communication_mode_4");
 
 // Output 
 std::string simtime = "log_simtime_v2x.csv"; 
