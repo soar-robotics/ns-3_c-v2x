@@ -27,16 +27,23 @@
 #include <ns3/lte-ue-net-device.h>
 #include <ns3/lte-hex-grid-enb-topology-helper.h>
 #include <ns3/output-stream-wrapper.h>
+#include "ns3/trace-helper.h"
+#include "ns3/net-device-container.h"
+#include "ns3/net-device.h"
+#include "ns3/node-container.h"
+
 
 namespace ns3 {
-
+class NetDevice;
+class Node;
 /**
  * This helper class allows to easily create a topology with eNBs
  * grouped in three-sector sites layed out on an hexagonal grid. The
  * layout is done row-wise. 
  *
+ * 
  */
-class LteV2xHelper : public Object
+class LteV2xHelper : public Object, public PcapHelperForDevice
 {
 public:
   /**
@@ -129,15 +136,49 @@ public:
    * \param ues The list of UEs where the bearer must be activated
    * \param tft Traffic flow template for the bearer (i.e. multicast address and group)
    */
-  void DoActivateSidelinkBearer (NetDeviceContainer ues, Ptr<LteSlTft> tft);
+  void DoActivateSidelinkBearer (NetDeviceContainer ues, Ptr<LteSlTft> tft);;
+
 
 private:
 
   Ptr<LteHelper> m_lteHelper;
+/**
+   * \brief Enable pcap output the indicated net device.
+   *
+   * NetDevice-specific implementation mechanism for hooking the trace and
+   * writing to the trace file.
+   *
+   * \param prefix Filename prefix to use for pcap files.
+   * \param nd Net device for which you want to enable tracing.
+   * \param promiscuous If true capture all possible packets available at the device.
+   * \param explicitFilename Treat the prefix as an explicit filename if true
+   */
+  virtual void EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename);
 
+  /**
+   * \brief Enable ascii trace output on the indicated net device.
+   *
+   * NetDevice-specific implementation mechanism for hooking the trace and
+   * writing to the trace file.
+   *
+   * \param stream The output stream object to use when logging ascii traces.
+   * \param prefix Filename prefix to use for ascii trace files.
+   * \param nd Net device for which you want to enable tracing.
+   * \param explicitFilename Treat the prefix as an explicit filename if true
+   */
+  /*virtual void EnableAsciiInternal (
+    Ptr<OutputStreamWrapper> stream,
+    std::string prefix,
+    Ptr<NetDevice> nd,
+    bool explicitFilename);
 
-
+  ObjectFactory m_queueFactory;         //!< Queue Factory
+  ObjectFactory m_channelFactory;       //!< Channel Factory
+  ObjectFactory m_deviceFactory;        //!< Device Factory
+  bool m_enableFlowControl;             //!< whether to enable flow control
+  */
 };  // end of 'class LteV2xHelper'
+
 
 
 } // namespace ns3

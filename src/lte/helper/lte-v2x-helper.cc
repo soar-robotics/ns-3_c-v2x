@@ -204,5 +204,39 @@ LteV2xHelper::DoActivateSidelinkBearer (NetDeviceContainer ues, Ptr<LteSlTft> tf
   m_lteHelper->ActivateSidelinkBearer (ues, tft);
 }
 
+void
+LteV2xHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename)
+{
+  //
+  // All of the Pcap enable functions vector through here including the ones
+  // that are wandering through all of devices on perhaps all of the nodes in
+  // the system.  We can only deal with devices of type PointToPointNetDevice.
+  //
+  /*
+  Ptr<PointToPointNetDevice> device = nd->GetObject<PointToPointNetDevice> ();
+  if (device == 0)
+    {
+      NS_LOG_INFO ("PointToPointHelper::EnablePcapInternal(): Device " << device << " not of type ns3::PointToPointNetDevice");
+      return;
+    }
+
+  PcapHelper pcapHelper;
+
+  std::string filename;
+  if (explicitFilename)
+    {
+      filename = prefix;
+    }
+  else
+    {
+      filename = pcapHelper.GetFilenameFromDevice (prefix, device);
+    }
+
+  Ptr<PcapFileWrapper> file = pcapHelper.CreateFile (filename, std::ios::out,
+                                                     PcapHelper::DLT_PPP);
+  pcapHelper.HookDefaultSink<PointToPointNetDevice> (device, "PromiscSniffer", file);
+  */
+}
+
 
 }
