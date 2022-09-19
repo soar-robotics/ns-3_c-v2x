@@ -172,7 +172,7 @@ main (int argc, char *argv[])
     // NOTE: commandline parser is currently (05.04.2019) not working for uint8_t (Bug 2916)
 
     uint16_t simTime = 100;                 // Simulation time in seconds
-    uint32_t numVeh = 100;                  // Number of vehicles
+    uint32_t numVeh = 10;                  // Number of vehicles
     lenCam = 190;                           // Length of CAM message in bytes [50-300 Bytes]
     double ueTxPower = 23.0;                // Transmission power in dBm
     double probResourceKeep = 0.0;          // Probability to select the previous resource again [0.0-0.8]
@@ -308,8 +308,8 @@ main (int argc, char *argv[])
     lteHelper->DisableNewEnbPhy(); // Disable eNBs for out-of-coverage modelling
     
     // V2X 
-    Ptr<LteV2xHelper> lteV2xHelper = CreateObject<LteV2xHelper> ();
-    lteV2xHelper->SetLteHelper (lteHelper); 
+    Ptr<LteV2xHelper> lteV2xHelper = CreateObject<LteV2xHelper>();
+    lteV2xHelper->SetLteHelper(lteHelper); 
 
     // Configure eNBs' antenna parameters before deploying them.
     lteHelper->SetEnbAntennaModelType ("ns3::NistParabolic3dAntennaModel");
@@ -518,6 +518,10 @@ main (int argc, char *argv[])
 
         NS_LOG_INFO ("Enabling LTE traces...");
         lteHelper->EnableTraces();
+
+        NS_LOG_INFO ("Enabling Pcap ...");
+        lteV2xHelper->EnablePcapAll("v2x_communication_example");
+    
 
         *log_simtime->GetStream() << "Simtime;TotalRx;TotalTx;PRR" << std::endl; 
         Simulator::Schedule(Seconds(1), &PrintStatus, 1, log_simtime);

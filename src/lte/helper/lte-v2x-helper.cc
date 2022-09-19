@@ -8,6 +8,16 @@
 #include <ns3/random-variable-stream.h>
 #include <iostream>
 
+#include "ns3/abort.h"
+#include "ns3/log.h"
+#include "ns3/simulator.h"
+#include "ns3/queue.h"
+#include "ns3/net-device-queue-interface.h"
+#include <ns3/simple-net-device.h>
+#include "ns3/config.h"
+#include "ns3/packet.h"
+#include "ns3/names.h"
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("LteV2xHelper"); 
@@ -33,6 +43,11 @@ LteV2xHelper::GetTypeId(void)
         .SetParent<Object> ()
         .SetGroupName("Lte")
         .AddConstructor<LteV2xHelper> ()
+        .AddTraceSource ("PromiscSniffer", 
+                     "Trace source simulating a promiscuous packet sniffer "
+                     "attached to the device",
+                     MakeTraceSourceAccessor (&LteV2xHelper::m_promiscSnifferTrace),
+                     "ns3::Packet::TracedCallback")
     ;
     return tid;
 }
@@ -205,18 +220,18 @@ LteV2xHelper::DoActivateSidelinkBearer (NetDeviceContainer ues, Ptr<LteSlTft> tf
 }
 
 void
-LteV2xHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename)
+LteV2xHelper::EnablePcapInternal (std::string prefix, Ptr<SimpleNetDevice> nd, bool promiscuous, bool explicitFilename)
 {
   //
   // All of the Pcap enable functions vector through here including the ones
   // that are wandering through all of devices on perhaps all of the nodes in
   // the system.  We can only deal with devices of type PointToPointNetDevice.
   //
-  /*
-  Ptr<PointToPointNetDevice> device = nd->GetObject<PointToPointNetDevice> ();
+  // SimpleNetDevice is changes with NetDevice
+  Ptr<SimpleNetDevice> device = nd->GetObject<SimpleNetDevice> ();
   if (device == 0)
     {
-      NS_LOG_INFO ("PointToPointHelper::EnablePcapInternal(): Device " << device << " not of type ns3::PointToPointNetDevice");
+      NS_LOG_INFO ("LteV2xHelper::EnablePcapInternal(): Device " << device << " not of type ns3::LteV2xHelper");
       return;
     }
 
@@ -234,8 +249,8 @@ LteV2xHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool pr
 
   Ptr<PcapFileWrapper> file = pcapHelper.CreateFile (filename, std::ios::out,
                                                      PcapHelper::DLT_PPP);
-  pcapHelper.HookDefaultSink<PointToPointNetDevice> (device, "PromiscSniffer", file);
-  */
+  pcapHelper.HookDefaultSink<SimpleNetDevice> (device, "PromiscSniffer", file);
+  
 }
 
 

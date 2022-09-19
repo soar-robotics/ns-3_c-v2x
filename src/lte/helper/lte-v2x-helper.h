@@ -31,11 +31,15 @@
 #include "ns3/net-device-container.h"
 #include "ns3/net-device.h"
 #include "ns3/node-container.h"
+#include <ns3/trace-helper.h>
+#include "ns3/object-factory.h"
+
 
 
 namespace ns3 {
 class NetDevice;
 class Node;
+class SimpleNetDevice;
 /**
  * This helper class allows to easily create a topology with eNBs
  * grouped in three-sector sites layed out on an hexagonal grid. The
@@ -43,7 +47,7 @@ class Node;
  *
  * 
  */
-class LteV2xHelper : public Object, public PcapHelperForDevice
+class LteV2xHelper : public Object , public PcapHelperForDevice
 {
 public:
   /**
@@ -86,6 +90,26 @@ public:
    * \return a container without the item
    */
   NetDeviceContainer RemoveNetDevice (NetDeviceContainer container, Ptr<NetDevice> item);
+
+  //added for AddTraceSource func
+  /**
+   * A trace source that emulates a promiscuous mode protocol sniffer connected
+   * to the device.  This trace source fire on packets destined for any host
+   * just like your average everyday packet sniffer.
+   *
+   * On the transmit size, this trace hook will fire after a packet is dequeued
+   * from the device queue for transmission.  In Linux, for example, this would
+   * correspond to the point just before a device \c hard_start_xmit where 
+   * \c dev_queue_xmit_nit is called to dispatch the packet to the PF_PACKET 
+   * ETH_P_ALL handlers.
+   *
+   * On the receive side, this trace hook will fire when a packet is received,
+   * just before the receive callback is executed.  In Linux, for example, 
+   * this would correspond to the point at which the packet is dispatched to 
+   * packet sniffers in \c netif_receive_skb.
+   */
+  TracedCallback<Ptr<const Packet> > m_promiscSnifferTrace;
+
 
   //Modified for vehicular v2x
   /**
@@ -138,11 +162,7 @@ public:
    */
   void DoActivateSidelinkBearer (NetDeviceContainer ues, Ptr<LteSlTft> tft);;
 
-
-private:
-
-  Ptr<LteHelper> m_lteHelper;
-/**
+  /**
    * \brief Enable pcap output the indicated net device.
    *
    * NetDevice-specific implementation mechanism for hooking the trace and
@@ -153,19 +173,16 @@ private:
    * \param promiscuous If true capture all possible packets available at the device.
    * \param explicitFilename Treat the prefix as an explicit filename if true
    */
-  virtual void EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename);
+  virtual void EnablePcapInternal (std::string prefix, Ptr<SimpleNetDevice> nd, bool promiscuous, bool explicitFilename);
 
-  /**
-   * \brief Enable ascii trace output on the indicated net device.
-   *
-   * NetDevice-specific implementation mechanism for hooking the trace and
-   * writing to the trace file.
-   *
-   * \param stream The output stream object to use when logging ascii traces.
-   * \param prefix Filename prefix to use for ascii trace files.
-   * \param nd Net device for which you want to enable tracing.
-   * \param explicitFilename Treat the prefix as an explicit filename if true
-   */
+
+
+private:
+
+  Ptr<LteHelper> m_lteHelper;
+
+
+  
   /*virtual void EnableAsciiInternal (
     Ptr<OutputStreamWrapper> stream,
     std::string prefix,
