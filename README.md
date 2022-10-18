@@ -34,6 +34,23 @@ To run the example script run:
    ./waf --run v2x_communication_example
 ```
 
+## C-V2X Simulation
+
+**Our aim**: 
+We are trying to see all the packages in loop-back when scenario is working. 
+
+So, we use **v2x-communication-example** to implement and see the results. 
+
+-  **lte-v2x-helper** is updated to get pcap form of packages.
+	-  added a base class (PcapHelperForDevice) to be avaible to use getting pcap methods.
+	-  added header files (trace-helper, object-factory etc.) to create trace form of pcap outputs
+	-  defined parameters to assign on the trace-files
+	-  implemented virtual method of PcapHelper (EnablePcapInternal) to use pcap-call methods
+- In **v2x-communication-example** 			 
+	- assigned packages to fill trace-file parameters.
+	- called methods to get pcaps
+
+
 # Cite as
 
 If you use our model in your research, please cite the following paper:
